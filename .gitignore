@@ -1,0 +1,8 @@
+cover/Development
+cover/Release
+
+*.NbWsp
+*.NbDt
+*.swp
+*.pyc
+
