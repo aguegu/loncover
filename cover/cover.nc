@@ -316,6 +316,13 @@ when (usart_available()) {
     memcpy(cache_rx, cache_rx + 1, 4);
 }
 
+void getReversedS32(s32_type *s, uint8_t *p) {
+    s->bytes[3] = p[0];
+    s->bytes[2] = p[1];
+    s->bytes[1] = p[2];
+    s->bytes[0] = p[3];
+}
+
 when (package_received) {
     s32_type s;
     uint8_t i;
@@ -326,25 +333,14 @@ when (package_received) {
     switch (package_rx.buff[1]) {
     case 0x1a:
         has_event = 0;
-
-        s.bytes[3] = package_rx.buff[14];
-        s.bytes[2] = package_rx.buff[15];
-        s.bytes[1] = package_rx.buff[16];
-        s.bytes[0] = package_rx.buff[17];
+		getReversedS32(&s, package_rx.buff + 14);
         nvoAngle = *(SNVT_angle_f *)(&s);
 
-        s.bytes[3] = package_rx.buff[20];
-        s.bytes[2] = package_rx.buff[21];
-        s.bytes[1] = package_rx.buff[22];
-        s.bytes[0] = package_rx.buff[23];
+		getReversedS32(&s, package_rx.buff + 20);
         nvoHit = *(SNVT_press_f *)(&s);
-
+        
         nvoTiltAlarm.state = package_rx.buff[26] & 0x02 ? 1 : 0;
         nvoLocked.state = package_rx.buff[26] & 0x04 ? 1 : 0;
-
-        nvoHitCount = 0;
-        nvoTiltCount = 0;
-        nvoOpenCount = 0;
 
         break;
     case 0x13:
@@ -361,18 +357,12 @@ when (package_received) {
             switch (package_rx.buff[i]) {
                 case 0x01:
                     nvoHitCount = package_rx.buff[i + 5];
-                    s.bytes[3] = package_rx.buff[i + 6];
-                    s.bytes[2] = package_rx.buff[i + 7];
-                    s.bytes[1] = package_rx.buff[i + 8];
-                    s.bytes[0] = package_rx.buff[i + 9];
+               		getReversedS32(&s, package_rx.buff + i + 6);
                     nvoHit = *(SNVT_press_f *)(&s);
                     break;
                 case 0x02:
                     nvoTiltCount = package_rx.buff[i + 5];
-                    s.bytes[3] = package_rx.buff[i + 6];
-                    s.bytes[2] = package_rx.buff[i + 7];
-                    s.bytes[1] = package_rx.buff[i + 8];
-                    s.bytes[0] = package_rx.buff[i + 9];
+               		getReversedS32(&s, package_rx.buff + i + 6);
                     nvoAngle = *(SNVT_angle_f *)(&s);
                     break;
                 case 0x03:
